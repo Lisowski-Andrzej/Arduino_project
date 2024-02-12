@@ -1,0 +1,57 @@
+#include <Stepper.h>
+
+#define sensor1 A0                         // Define pin for sensor 1
+#define sensor2 A1                         // Define pin for sensor 2
+#define pumpPin 9                          // Define pin for the pump
+int buttonPin = 7;                         // Define pin for the button
+const int ledPin = 13;                     // Define pin for the LED
+int motorSpeed = 10;                       // Motor speed in RPM
+Stepper myStepper(2048, 10, 11, 12, 13);   // Initialize stepper motor
+int DISTANCE_THRESHOLD = 200;             // Distance threshold on sensors
+
+void setup() 
+{
+  int MOTOR_STEPS_PER_MM = 128;           // Motor steps per mm
+  pinMode(buttonPin, INPUT);              // Set button pin as input with pull-up
+  pinMode(pumpPin, OUTPUT);               // Set pump pin as output
+  pinMode(ledPin, OUTPUT);                // Set LED pin as output
+  pinMode(sensor1, INPUT);                // Set sensor 1 pin as input
+  pinMode(sensor2, INPUT);                // Set sensor 2 pin as input
+  myStepper.setSpeed(motorSpeed);         // Set motor speed
+}
+
+void loop() 
+{
+  if (digitalRead(buttonPin) == HIGH)     // Check if button is pressed
+{
+    digitalWrite(ledPin, HIGH);           // Turn on LED
+    int distance1 = analogRead(sensor1);  // Read distance from sensor 1
+    int distance2 = analogRead(sensor2);  // Read distance from sensor 2
+
+    // If both distances are below threshold
+
+    if (distance1 < DISTANCE_THRESHOLD && distance2 < DISTANCE_THRESHOLD) 
+{
+      myStepper.step(400);                // Move stepper motor
+      digitalWrite(pumpPin, LOW);         // Turn on pump
+      delay(3000);                        // Delay for pump operation
+      digitalWrite(pumpPin, HIGH);        // Turn off pump
+      delay(3000);                        // Delay for pump operation
+      myStepper.step(400);                // Move stepper motor
+      delay(3000);                        // Delay for motor operation
+      digitalWrite(pumpPin, LOW);         // Turn on pump
+      delay(3000);                        // Delay for pump operation
+      digitalWrite(pumpPin, HIGH);        // Turn off pump
+      delay(3000);                        // Delay for pump operation
+      myStepper.step(-800);               // Return stepper motor to initial position
+      delay(10000);                       // Delay before next loop iteration
+    } 
+
+    // If only one distance is below threshold
+
+    else 
+    {
+      digitalWrite(pumpPin, HIGH);        // Turn off pump
+    }
+  }
+}
